@@ -164,11 +164,10 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
 
             // Welcome Card
             Card(
-              color: Colors.blue[50],
+              color: Colors.blue.shade200,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              elevation: 6,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
@@ -192,17 +191,11 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                             style: TextStyle(
                               fontSize: 14,
                               fontFamily: "GoogleSans",
-                              color: Colors.grey,
+                              color: Colors.black54,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    Image.asset(
-                      'assets/Images/dentist1.jpg',
-                      width: 80,
-                      height: 80,
                     ),
                   ],
                 ),
@@ -223,9 +216,9 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 16.0),
                       decoration: BoxDecoration(
-                        color: Colors.blue[200],
+                        color: Colors.purple.shade200,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -252,9 +245,9 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                 // Patient Queries
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 16.0),
                     decoration: BoxDecoration(
-                      color: Colors.blue[300],
+                      color: Colors.pink.shade200,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
