@@ -9,13 +9,11 @@ class ManageUsersPage extends StatefulWidget {
 class _ManageUsersPageState extends State<ManageUsersPage> {
   bool isLoading = true;
   List<Map<String, dynamic>> users = [];
-
   @override
   void initState() {
     super.initState();
     _fetchUsers();
   }
-
   Future<void> _fetchUsers() async {
     try {
       QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance
@@ -40,23 +38,6 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
     }
   }
 
-  Future<void> _editUser(String docId, String newName) async {
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(docId).update({
-        'userName': newName,
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User updated successfully")),
-      );
-      _fetchUsers();
-    } catch (error) {
-      print("Error editing user: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to update user")),
-      );
-    }
-  }
-
   Future<void> _deleteUser(String docId) async {
     try {
       await FirebaseFirestore.instance.collection('users').doc(docId).delete();
@@ -70,55 +51,6 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
         const SnackBar(content: Text("Failed to delete user")),
       );
     }
-  }
-
-  void _showEditDialog(String docId, String currentName) {
-    final TextEditingController nameController = TextEditingController(text: currentName);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          "Edit User",
-          style: TextStyle(fontFamily: "GoogleSans", fontWeight: FontWeight.bold),
-        ),
-        content: TextField(
-          controller: nameController,
-          style: const TextStyle(fontFamily: "GoogleSans"),
-          decoration: const InputDecoration(
-            labelText: "User Name",
-            labelStyle: TextStyle(color: Colors.blue, fontFamily: "GoogleSans"),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.blue),
-            ),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text(
-              "Cancel",
-              style: TextStyle(fontFamily: "GoogleSans", color: Colors.blue),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _editUser(docId, nameController.text);
-            },
-            child: const Text(
-              "Save",
-              style: TextStyle(fontFamily: "GoogleSans", color: Colors.blue),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showDeleteDialog(String docId) {
@@ -166,16 +98,16 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white,size: 18,),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         title: const Text(
           "Manage Users",
-          style: TextStyle(fontFamily: "GoogleSans", fontSize: 16, color: Colors.white),
+          style: TextStyle(fontFamily: "GoogleSans", fontSize: 18, color: Colors.white),
         ),
       ),
       body: Container(
@@ -188,7 +120,7 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/Images/patients.png',  // Replace with the actual image path
+                'assets/Images/patients.png',
                 width: 500,
                 height: 250,
               ),
@@ -208,8 +140,6 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                 style: TextStyle(fontSize: 16, fontFamily: "GoogleSans"),
               ),
               const SizedBox(height: 16),
-
-              // Table (List of Users)
               users.isEmpty
                   ? const Center(
                 child: Text(
@@ -232,13 +162,12 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                       ),
                       margin: const EdgeInsets.symmetric(vertical: 8),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                        contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         leading: CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.blue.shade100,
-                          child: const Icon(Icons.person,
-                              color: Colors.blue, size: 30),
+                          child: const Icon(Icons.person, color: Colors.blue, size: 30),
                         ),
                         title: Text(
                           user['userName'] ?? "No Name",
@@ -248,27 +177,11 @@ class _ManageUsersPageState extends State<ManageUsersPage> {
                             fontFamily: "GoogleSans",
                           ),
                         ),
-                        subtitle: Text(
-                          user['email'] ?? "No Email",
-                          style: const TextStyle(
-                              fontSize: 14, color: Colors.grey, fontFamily: "GoogleSans"),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {
-                                _showEditDialog(user['docId'], user['userName'] ?? "");
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                _showDeleteDialog(user['docId']);
-                              },
-                            ),
-                          ],
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            _showDeleteDialog(user['docId']);
+                          },
                         ),
                       ),
                     );

@@ -14,10 +14,13 @@ class DoctorScreen extends StatelessWidget {
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'GoogleSans',
-          fontSize: 20),),
+            fontSize: 20,
+
+          ),
+        ),
         foregroundColor: Colors.white,
         backgroundColor: Colors.blue,
-
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 20),
@@ -28,10 +31,15 @@ class DoctorScreen extends StatelessWidget {
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator(color: Colors.blue));
             }
             if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              );
             }
             var doctors = snapshot.data!.docs;
 
@@ -41,7 +49,7 @@ class DoctorScreen extends StatelessWidget {
                 var doctor = doctors[index].data() as Map<String, dynamic>;
 
                 String userName = doctor['userName'] ?? 'Unknown';
-                String speciality = doctor['speciality'] ?? 'Not Specified';
+                String speciality = doctor['profession'] ?? 'Not Specified';
                 String location = doctor['location'] ?? 'Location not available';
                 String formattedAppointmentTime = '';
 
@@ -56,44 +64,45 @@ class DoctorScreen extends StatelessWidget {
                     print('Unexpected appointmentTime format: $appointmentTime');
                   }
                 }
+
                 return InkWell(
                   onTap: () {
                     Navigator.pushNamed(context, '/desc', arguments: {
-                      'doctorId': doctors[index].id, 
+                      'doctorId': doctors[index].id,
                     });
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(
-                      vertical: 5,
-                      horizontal: 10,
+                      vertical: 8,
+                      horizontal: 16,
                     ),
-                    padding: EdgeInsets.all(10),
-                    width: double.infinity,
-                    height: 120,
+                    padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
-                          blurRadius: 0.5,
-                          color: Colors.grey,
-                          offset: Offset(0, 0.5),
-                          spreadRadius: 0.5,
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
                         ),
                       ],
                     ),
                     child: Row(
                       children: [
+                        // Doctor's Avatar
                         ClipRRect(
                           borderRadius: BorderRadius.circular(50),
                           child: Image.asset(
                             'assets/Images/avatar.png',
-                            width: 50,
-                            height: 50,
+                            width: 60,
+                            height: 60,
                             fit: BoxFit.cover,
                           ),
                         ),
                         SizedBox(width: 20),
+                        // Doctor's Details
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,22 +111,22 @@ class DoctorScreen extends StatelessWidget {
                               Text(
                                 'Dr. $userName',
                                 style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 18,
+                                  color: Colors.blue,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'GoogleSans',
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 8),
                               Text(
                                 speciality,
                                 style: TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 14,
+                                  color: Colors.grey[700],
+                                  fontSize: 16,
                                   fontFamily: 'GoogleSans',
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              SizedBox(height: 8),
                               Row(
                                 children: [
                                   Icon(Icons.location_on,
@@ -126,7 +135,7 @@ class DoctorScreen extends StatelessWidget {
                                   Text(
                                     location,
                                     style: TextStyle(
-                                      color: Colors.black,
+                                      color: Colors.grey[700],
                                       fontSize: 14,
                                       fontFamily: 'GoogleSans',
                                     ),
@@ -134,13 +143,13 @@ class DoctorScreen extends StatelessWidget {
                                 ],
                               ),
                               if (formattedAppointmentTime.isNotEmpty) ...[
-                                SizedBox(height: 10),
+                                SizedBox(height: 8),
                                 Text(
                                   'Available at: $formattedAppointmentTime',
                                   style: TextStyle(
-                                    color: Colors.black,
+                                    color: Colors.green[700],
                                     fontSize: 14,
-                                    fontFamily: 'Poppins',
+                                    fontFamily: 'GoogleSans',
                                   ),
                                 ),
                               ],

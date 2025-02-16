@@ -105,7 +105,7 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.article),
               title: Text('Articles', style: TextStyle(fontFamily: 'GoogleSans')),
               onTap: () {
-                Navigator.pushReplacementNamed(context, '/articles');
+                Navigator.pushNamed(context, '/articles');
               },
             ),
             ListTile(

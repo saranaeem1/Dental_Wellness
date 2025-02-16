@@ -18,7 +18,7 @@ class AppointmentsPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "My Appointments",
+          "Appointments",
           style: TextStyle(
             fontFamily: "GoogleSans",
             fontSize: 20,
@@ -132,7 +132,7 @@ class AppointmentsPage extends StatelessWidget {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.cake, color: Colors.orange, size: 20),
+                          const Icon(Icons.emoji_people, color: Colors.orange, size: 20),
                           const SizedBox(width: 8),
                           Text(
                             'Age: ${appointment.patientAge}',
@@ -147,7 +147,7 @@ class AppointmentsPage extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Concern: ${appointment.patientIssue}',
+                              'Phone No: ${appointment.phoneNo}',
                               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 2,

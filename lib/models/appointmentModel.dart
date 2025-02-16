@@ -6,10 +6,10 @@ class Appointment {
   String doctorName;
   String patientName;
   String patientAge;
-  String patientIssue;
   String appointmentTime;
   Timestamp timestamp;
   String userId;
+  String phoneNo;
 
   Appointment({
     this.id = '', // Default value
@@ -17,7 +17,7 @@ class Appointment {
     required this.doctorName,
     required this.patientName,
     required this.patientAge,
-    required this.patientIssue,
+    required this.phoneNo,
     required this.appointmentTime,
     required this.timestamp,
     required this.userId,
@@ -31,7 +31,7 @@ class Appointment {
       doctorName: data['doctorName'] ?? '',
       patientName: data['patientName'] ?? '',
       patientAge: data['patientAge'] ?? '',
-      patientIssue: data['patientIssue'] ?? '',
+      phoneNo: data['phoneNo'] ?? '',
       appointmentTime: data['appointmentTime'] ?? '',
       timestamp: data['timestamp'] ?? Timestamp.now(),
       userId: data['userId'] ?? '',
@@ -44,7 +44,7 @@ class Appointment {
       'doctorName': doctorName,
       'patientName': patientName,
       'patientAge': patientAge,
-      'patientIssue': patientIssue,
+      'phoneNo': phoneNo,
       'appointmentTime': appointmentTime,
       'timestamp': timestamp,
       'userId': userId,

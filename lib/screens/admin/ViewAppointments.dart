@@ -77,7 +77,7 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.blue,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white,size: 18,),
           onPressed: () {
@@ -88,7 +88,7 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
           "Appointments",
           style: TextStyle(
             fontFamily: "GoogleSans",
-            fontSize: 16,
+            fontSize: 18,
             color: Colors.white,
           ),
         ),
@@ -177,29 +177,54 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            "Patient: ${appointment['patientName'] ?? 'N/A'}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontFamily: "GoogleSans",
-                            ),
+                          Row(
+                            children: [
+                              const Icon(Icons.person, color: Colors.blue, size: 20),
+                              const SizedBox(width:8),
+                              Text(
+                                "Patient: ${appointment['patientName'] ?? 'N/A'}",
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: "GoogleSans",
+                                ),
+                              ),
+                            ],
                           ),
+
                           const SizedBox(height: 4),
-                          Text(
-                            "Age: ${appointment['patientAge'] ?? 'N/A'}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontFamily: "GoogleSans",
-                            ),
+
+                          Row(
+                            children: [
+                              const Icon(Icons.emoji_people, color: Colors.orange, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Age: ${appointment['patientAge'] ?? 'N/A'}",
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: "GoogleSans",
+                                ),
+                              ),
+                            ],
                           ),
+
                           const SizedBox(height: 4),
-                          Text(
-                            "Issue: ${appointment['patientIssue'] ?? 'N/A'}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontFamily: "GoogleSans",
-                            ),
+                          Row(
+                            children: [
+                              const Icon(Icons.phone, color: Colors.red, size: 20),
+                              const SizedBox(width: 8,),
+                              Text(
+                                "Phone No: ${appointment['phoneNo'] ?? 'N/A'}",
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: "GoogleSans",
+                                ),
+                              ),
+                            ],
                           ),
+
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,

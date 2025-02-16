@@ -23,7 +23,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Dental Health Articles', style: TextStyle(color: Colors.white),),
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<List<Article>>(

@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../footer.dart';
-import 'package:intl/intl.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'appointment.dart';
 
 class DescriptionScreen extends StatefulWidget {
   final String doctorId;
-  DescriptionScreen({required this.doctorId});
+
+  const DescriptionScreen({Key? key, required this.doctorId}) : super(key: key);
 
   @override
   _DescriptionScreenState createState() => _DescriptionScreenState();
 }
 
 class _DescriptionScreenState extends State<DescriptionScreen> {
-  late Map<String, List<String>> availability = {};
-  late Set<String> bookedSlots = Set<String>(); // To store booked slots
-  Map<String, dynamic>? doctor; // To store doctor details
+  Map<String, dynamic>? doctor;
+  Map<String, List<Map<String, String>>> availability = {};
 
   @override
   void initState() {
     super.initState();
     _fetchDoctorData();
-    _fetchBookedSlots();
   }
 
   Future<void> _fetchDoctorData() async {
@@ -30,68 +28,50 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
           .collection('users')
           .doc(widget.doctorId)
           .get();
+
       if (doctorDoc.exists) {
+        Map<String, dynamic> doctorData = doctorDoc.data() as Map<String, dynamic>;
+        print('Doctor Data: $doctorData'); // Debugging
+
+        Map<String, List<Map<String, String>>> parsedAvailability = {};
+
+        if (doctorData.containsKey('availability')) {
+          Map<String, dynamic> availabilityData = doctorData['availability'] as Map<String, dynamic>;
+          print('Availability Data: $availabilityData');
+
+          availabilityData.forEach((day, slotData) {
+            if (slotData is List) {
+              List<Map<String, String>> slots = slotData.map((slot) {
+                return {
+                  'start': slot['start']?.toString() ?? '',
+                  'end': slot['end']?.toString() ?? '',
+                };
+              }).toList();
+              parsedAvailability[day] = slots;
+            }
+          });
+        }
+
         setState(() {
-          doctor = doctorDoc.data() as Map<String, dynamic>;
-
-          // Check if 'availability' exists and is a Map
-          if (doctor!.containsKey('availability') &&
-              doctor!['availability'] is Map) {
-            Map<String, dynamic> availabilityMap =
-            doctor!['availability'] as Map<String, dynamic>;
-
-            availability = availabilityMap.map((key, value) {
-              if (value is List) {
-                // Convert each timestamp to a formatted string
-                List<String> slots = value.map((slot) {
-                  if (slot is Timestamp) {
-                    DateTime dateTime = slot.toDate();
-                    return _formatDateTime(dateTime);
-                  }
-                  else {
-                    print('Unexpected slot type: ${slot.runtimeType}');
-                    return '';
-                  }
-                }).toList();
-                return MapEntry(key, slots);
-              } else {
-                return MapEntry(key, []);
-              }
-            });
-          } else {
-            availability = {};
-          }
+          doctor = doctorData;
+          availability = parsedAvailability;
         });
-      } else {
-        print('Doctor not found');
       }
     } catch (e) {
       print('Error fetching doctor data: $e');
     }
   }
-  String _formatDateTime(DateTime dateTime) {
-    return DateFormat('hh:mm a').format(dateTime);
-  }
-  Future<void> _fetchBookedSlots() async {
-    try {
-      QuerySnapshot appointmentSnapshot = await FirebaseFirestore.instance
-          .collection('appointments')
-          .where('doctorId', isEqualTo: widget.doctorId)
-          .get();
 
-      Set<String> booked = Set<String>();
-
-      for (var doc in appointmentSnapshot.docs) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        booked.add(data['appointmentTime']);
+  // Get the first available slot
+  Map<String, String>? _getFirstAvailableSlot() {
+    if (availability.isNotEmpty) {
+      for (var day in availability.keys) {
+        if (availability[day]!.isNotEmpty) {
+          return availability[day]!.first;
+        }
       }
-
-      setState(() {
-        bookedSlots = booked;
-      });
-    } catch (e) {
-      print('Error fetching booked slots: $e');
     }
+    return null;
   }
 
   @override
@@ -99,191 +79,144 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          'Dentists Details',
+        title: const Text(
+          'Dentist Details',
           style: TextStyle(fontFamily: 'GoogleSans', color: Colors.white),
         ),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        elevation: 2,
       ),
-      body: SafeArea(
+      body: doctor == null
+          ? const Center(child: CircularProgressIndicator(color: Colors.blue))
+          : Padding(
+        padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Doctor's image in a card
-              if (doctor != null && doctor!['imageUrl'] != null)
-                Card(
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                  elevation: 4,
-                  child: Image.network(
-                    doctor!['imageUrl'],
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+              // Doctor's details
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: doctor?['imageUrl'] != null
+                        ? NetworkImage(doctor!['imageUrl'])
+                        : const AssetImage('assets/Images/dentist1.jpg')
+                    as ImageProvider,
                   ),
-                ),
-
-              SizedBox(height: 10),
-
-              // Doctor's details in a card
-              if (doctor != null)
-                Card(
-                  margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                  elevation: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                  const SizedBox(width: 15),
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Dr. ${doctor!['userName'] ?? ''}',
+                          "Dr. ${doctor?['userName'] ?? 'No Name'}",
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 26,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'GoogleSans',
+                            color: Colors.blue,
                           ),
                         ),
-                        SizedBox(height: 10),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            'Specialization',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'GoogleSans',
-                            ),
-                          ),
-                          subtitle: Text(
-                            doctor!['speciality'] ?? '',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        Divider(),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(Icons.location_on, color: Colors.blue, size: 24),
-                          title: Text(
-                            'Location',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'GoogleSans',
-                            ),
-                          ),
-                          subtitle: GestureDetector(
-                            onTap: () async {
-                              final url = 'https://www.google.com/maps/search/?api=1&query=${doctor!['location']}';
-                              if (await canLaunch(url)) {
-                                await launch(url);
-                              } else {
-                                throw 'Could not launch $url';
-                              }
-                            },
-                            child: Text(
-                              doctor!['location'] ?? '',
-                              style: TextStyle(color: Colors.black, fontSize: 16),
-                            ),
-                          ),
-                        ),
-                        Divider(),
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            'About',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'GoogleSans',
-                            ),
-                          ),
-                          subtitle: Text(
-                            doctor!['description'] ?? '',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
+                        const SizedBox(height: 4),
+                        _infoText(doctor?['specialization']),
+                        _infoText(doctor?['profession']),
                       ],
                     ),
                   ),
-                ),
+                ],
+              ),
+              const SizedBox(height: 20),
 
-              SizedBox(height: 20),
+              // Experience
+              _buildDetailRow(
+                icon: FontAwesomeIcons.star,
+                text: "${doctor?['experience']} years of Experience",
+              ),
+              const SizedBox(height: 20),
 
-              // Available slots in a card
+              // Location
+              _buildDetailRow(
+                icon: FontAwesomeIcons.locationDot,
+                text: doctor?['location'] ?? 'Not provided',
+              ),
+              const SizedBox(height: 20),
+
+              // Description
               Card(
-                margin: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                elevation: 4,
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Available Slots',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'GoogleSans',
+                  child: Text(
+                    doctor?['desc'] ?? 'No description available',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'GoogleSans',
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Available Timings
+              _sectionTitle('Available Timings'),
+              const SizedBox(height: 10),
+              availability.isEmpty
+                  ? const Text(
+                "No available slots.",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              )
+                  : Column(
+                children: availability.keys.map((day) {
+                  List<Map<String, String>> slots = availability[day] ?? [];
+                  return _buildDaySlotCard(day, slots);
+                }).toList(),
+              ),
+              const SizedBox(height: 30),
+
+              // Book Appointment Button
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Map<String, String>? slot = _getFirstAvailableSlot();
+                    if (slot != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AppointmentScreen(
+                            doctorId: widget.doctorId,
+                            selectedSlot: slot,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 10),
-                      // Display availability slots by day
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: availability.entries
-                            .where((entry) => entry.value.any((slot) => !bookedSlots.contains(slot)))
-                            .map((entry) {
-                          String day = entry.key;
-                          List<String> slots = entry.value;
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(day,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  )),
-                              SizedBox(height: 5),
-                              Wrap(
-                                spacing: 10,
-                                children: slots.map((slot) {
-                                  bool isDisabled = bookedSlots.contains(slot);
-
-                                  return GestureDetector(
-                                    onTap: isDisabled
-                                        ? null
-                                        : () {
-                                      _navigateToAppointment(context, slot);
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 10, horizontal: 16),
-                                      decoration: BoxDecoration(
-                                        color: isDisabled
-                                            ? Colors.grey[300]
-                                            : Colors.blueGrey[100],
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        slot,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: isDisabled
-                                              ? Colors.grey
-                                              : Colors.black,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                              SizedBox(height: 20),
-                            ],
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("No available slots."),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Book Appointment',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontFamily: 'GoogleSans',
+                    ),
                   ),
                 ),
               ),
@@ -291,18 +224,87 @@ class _DescriptionScreenState extends State<DescriptionScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: FooterScreen(),
     );
   }
 
-  void _navigateToAppointment(BuildContext context, String selectedSlot) {
-    Navigator.pushNamed(
-      context,
-      '/appointment',
-      arguments: {
-        'doctorId': widget.doctorId,
-        'selectedSlot': selectedSlot,
-      },
+  // Helper widget for detail rows
+  Widget _buildDetailRow({required IconData icon, required String text}) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.blue, size: 20),
+        const SizedBox(width: 10),
+        Text(
+          text,
+          style: TextStyle(
+            fontSize: 16,
+            fontFamily: 'GoogleSans',
+            color: Colors.grey[700],
+          ),
+        ),
+      ],
     );
+  }
+
+  // Helper widget for section titles
+  Widget _sectionTitle(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        fontFamily: 'GoogleSans',
+        color: Colors.blue,
+      ),
+    );
+  }
+  Widget _infoText(String? text) {
+    return text != null
+        ? Text(
+      text,
+      style: const TextStyle(fontSize: 18, fontFamily: 'GoogleSans'),
+    )
+        : const SizedBox.shrink();
+  }
+  // Helper widget for displaying day and slots
+  Widget _buildDaySlotCard(String day, List<Map<String, String>> slots) {
+    return Padding(
+      padding: const EdgeInsets.all(6.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            day,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue,
+            ),
+          ),
+          const SizedBox(width: 8),
+          ...slots.map((slot) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Text(
+              "${_formatTime(slot['start'] ?? '')} - ${_formatTime(slot['end'] ?? '')}",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  // Helper function to format time
+  String _formatTime(String time) {
+    if (time.isEmpty) return "";
+
+    try {
+      DateTime parsedTime = DateTime.parse("2022-01-01 $time");
+      return "${parsedTime.hour % 12 == 0 ? 12 : parsedTime.hour % 12}:${parsedTime.minute.toString().padLeft(2, '0')} ${parsedTime.hour < 12 ? 'AM' : 'PM'}";
+    } catch (e) {
+      return time; // Return original if parsing fails
+    }
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:intl/intl.dart';
-// import 'package:tooth_tales/constants/constant.dart';
+import 'package:tooth_tales/constants/constant.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -13,7 +13,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   TextEditingController _userInput = TextEditingController();
-  final model = GenerativeModel(model: 'gemini-pro', apiKey: 'c2b6b3799d5040bca84ad0c449d35338');
+  final model = GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
   final List<Message> _messages = [];
 
   Future<void> sendMessage() async {
@@ -45,7 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Chat', style: TextStyle(color: Colors.white,fontFamily: "GoogleSans"),),
+        title: Text('Chat', style: TextStyle(color: Colors.white),),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -87,7 +87,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           borderRadius: BorderRadius.circular(15),
                         ),
                         labelText: 'Enter Your Message',
-                        labelStyle: TextStyle(color: Color(0xFF6B6969),fontFamily: "GoogleSans"),
+                        labelStyle: TextStyle(color: Color(0xFF6B6969)),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(15),
                           borderSide: BorderSide(color: Colors.grey),
@@ -155,7 +155,7 @@ class Messages extends StatelessWidget {
         right: isUser ? 10 : 100,
       ),
       decoration: BoxDecoration(
-        color: isUser ? Colors.cyan : Colors.grey.shade200,
+        color: isUser ? Colors.blue : Colors.grey.shade200,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(10),
           bottomLeft: isUser ? Radius.circular(10) : Radius.zero,
