@@ -176,13 +176,14 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: EdgeInsets.only(top: 16.0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Appointment with Dr. ${doctorData['userName']}',
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 19,
                           fontWeight: FontWeight.bold,
                           color: Colors.blue,
                           fontFamily: 'GoogleSans',
