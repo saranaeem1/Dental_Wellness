@@ -6,7 +6,7 @@ import 'package:tooth_tales/screens/signup.dart';
 import 'package:tooth_tales/screens/user/homepage.dart';
 import 'package:tooth_tales/screens/doctor/doctorHomePage.dart';
 
-import 'admin/adminhomepage.dart'; // Import AdminHomePage
+import 'admin/adminhomepage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);

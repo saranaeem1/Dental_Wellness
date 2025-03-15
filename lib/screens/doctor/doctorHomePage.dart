@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../login.dart';
 import 'package:intl/intl.dart';
 import './appointmentsPage.dart';
+import './dentistQuery.dart';
 
 class DoctorHomePage extends StatefulWidget {
   const DoctorHomePage({Key? key}) : super(key: key);
@@ -244,6 +245,10 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
 
                 // Patient Queries
                 Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/dentist-queries');
+                    },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 16.0),
                     decoration: BoxDecoration(
@@ -267,6 +272,7 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                       ],
                     ),
                   ),
+                ),
                 ),
               ],
             ),

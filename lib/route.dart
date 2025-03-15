@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tooth_tales/screens/admin/adminhomepage.dart';
 import 'package:tooth_tales/screens/article/article.dart';
 import 'package:tooth_tales/screens/ChatsAndTips/chat.dart';
 import 'package:tooth_tales/screens/doctor/doctorProfile.dart';
+import 'package:tooth_tales/screens/doctor/dentistQuery.dart';
 import 'package:tooth_tales/screens/admin/doctorregisterpage.dart';
 import 'package:tooth_tales/screens/admin/manageusers.dart';
 import 'package:tooth_tales/screens/admin/managedoctor.dart';
@@ -16,6 +18,8 @@ import 'package:tooth_tales/screens/alarm/alarm.dart';
 import 'package:tooth_tales/screens/alarm/alarm_start.dart';
 import 'package:tooth_tales/screens/user/appointment.dart';
 import 'package:tooth_tales/screens/user/oralexamination.dart';
+import 'package:tooth_tales/screens/user/userQuery.dart';
+import 'package:tooth_tales/screens/login.dart';
 
 Map<String, WidgetBuilder> appRoutes = {
   '/footer': (context) => FooterScreen(),
@@ -33,6 +37,24 @@ Map<String, WidgetBuilder> appRoutes = {
   '/managedoctor': (context) => ManageDoctorsPage(),
   '/viewappointments': (context) => ViewAppointmentsPage(),
   '/oralexamination' : (context) => OralExaminationScreen(),
+  '/questions': (context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return UserQuery(userId: user.uid);
+    } else {
+      return LoginScreen();
+    }
+  },
+  '/dentist-queries': (context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return DentistQuery(dentistId: user.uid);
+    } else {
+      return LoginScreen();
+    }
+  },
+
+
 };
 
 Route<dynamic>? generateRoute(RouteSettings settings) {
