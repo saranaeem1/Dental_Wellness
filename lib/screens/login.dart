@@ -5,7 +5,6 @@ import 'package:tooth_tales/reusable_widgets/reusable_widget.dart';
 import 'package:tooth_tales/screens/signup.dart';
 import 'package:tooth_tales/screens/user/homepage.dart';
 import 'package:tooth_tales/screens/doctor/doctorHomePage.dart';
-
 import 'admin/adminhomepage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,10 +39,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.blue,
                     fontSize: 35,
                     fontWeight: FontWeight.bold,
-                    fontFamily:"GoogleSans",
+                    fontFamily: "GoogleSans",
                   ),
                 ),
-                SizedBox(height:5),
+                SizedBox(height: 5),
                 Text(
                   "Login to your account and",
                   style: TextStyle(
@@ -60,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontFamily: "GoogleSans",
                   ),
                 ),
-                SizedBox(height:20),
+                SizedBox(height: 20),
                 Image.asset(
                   "assets/Images/dentistss.png",
                   width: 500,
@@ -79,7 +78,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   isPasswordType: true,
                   controller: _passwordTextController,
                 ),
-                SizedBox(height: 20),
+                // SizedBox(height: 5),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: _resetPassword,
+                    child: Text(
+                      "Forgot Password?",
+                      style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold,fontFamily: 'GoogleSans'),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 3),
                 signInSignUpButton(context, true, _signInUser),
                 signUpOption(context),
               ],
@@ -92,7 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _signInUser() async {
     try {
-      // Sign in the user with email and password
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
         email: _emailTextController.text,
@@ -100,19 +109,14 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       String userId = userCredential.user!.uid;
 
-      // Fetch user data from Firestore
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
           .get();
 
       if (userDoc.exists) {
-        print('User document data: ${userDoc.data()}');
-
-        // Get the 'id' field as a String (to avoid type mismatch)
         String userIdFromFirestore = userDoc.get('id').toString();
 
-        // Check if the user's id is '0' (admin)
         if (userIdFromFirestore == '0') {
           Navigator.pushReplacement(
             context,
@@ -123,11 +127,9 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
 
-        // Check if the user is a doctor
         bool isDoctor = userDoc.get('isDoctor');
         _showCustomSnackBar(context, 'Login successful!', Colors.green);
 
-        // Navigate to DoctorHomePage or HomePage based on isDoctor flag
         if (isDoctor) {
           Navigator.pushReplacement(
             context,
@@ -140,12 +142,23 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        print('User document does not exist in Firestore');
         _showCustomSnackBar(context, 'User does not exist!', Colors.red);
       }
     } catch (error) {
-      print("Error signing in: $error");
-      _showCustomSnackBar(context, 'Incorrect credential', Colors.red);
+      _showCustomSnackBar(context, 'Incorrect credentials', Colors.red);
+    }
+  }
+
+  void _resetPassword() async {
+    if (_emailTextController.text.isEmpty) {
+      _showCustomSnackBar(context, 'Enter your email to reset password.', Colors.orange);
+      return;
+    }
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: _emailTextController.text);
+      _showCustomSnackBar(context, 'Password reset email sent!', Colors.green);
+    } catch (error) {
+      _showCustomSnackBar(context, 'Error: Check your email address.', Colors.red);
     }
   }
 
@@ -161,9 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
       action: SnackBarAction(
         label: 'Dismiss',
         textColor: Colors.white,
-        onPressed: () {
-          // Optional dismiss action
-        },
+        onPressed: () {},
       ),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -174,15 +185,14 @@ Row signUpOption(BuildContext context) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
-      const Text("Don't have an account?", style: TextStyle(color: Colors.black,fontFamily:"GoogleSans",)),
+      Text("Don't have an account?", style: TextStyle(color: Colors.black, fontFamily: "GoogleSans")),
       GestureDetector(
         onTap: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SignUpScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
         },
-        child: const Text(
+        child: Text(
           " Sign Up",
-          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold,fontFamily:"GoogleSans",),
+          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontFamily: "GoogleSans"),
         ),
       ),
     ],

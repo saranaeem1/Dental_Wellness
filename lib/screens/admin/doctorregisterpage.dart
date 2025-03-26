@@ -1,8 +1,10 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tooth_tales/models/userModel.dart';
+import '../../services/email_service.dart';
 import '../../services/firestore_service.dart';
+import 'package:tooth_tales/models/userModel.dart';
 
 class DoctorRegisterPage extends StatefulWidget {
   const DoctorRegisterPage({Key? key}) : super(key: key);
@@ -14,8 +16,7 @@ class DoctorRegisterPage extends StatefulWidget {
 class _DoctorRegisterPageState extends State<DoctorRegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _isPasswordVisible = false; // To toggle password visibility
+  bool _isLoading = false; // State for showing progress indicator
 
   @override
   Widget build(BuildContext context) {
@@ -23,24 +24,14 @@ class _DoctorRegisterPageState extends State<DoctorRegisterPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18,),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text(
-          "Dentist Registration",
-          style: TextStyle(fontFamily: "GoogleSans", fontSize: 16, color: Colors.white),
-        ),
+        foregroundColor: Colors.white,
+        title: const Text("Dentist Registration", style: TextStyle(color: Colors.white)),
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
                   child: Text(
@@ -57,11 +48,8 @@ class _DoctorRegisterPageState extends State<DoctorRegisterPage> {
                 Center(
                   child: Text(
                     "Create a Dentist account to enable them to provide treatment to users.",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: "GoogleSans",
-                    ),
-                    textAlign: TextAlign.center, // Center align the text
+                    style: TextStyle(fontSize: 16, fontFamily: "GoogleSans"),
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -73,45 +61,22 @@ class _DoctorRegisterPageState extends State<DoctorRegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _nameController,
-                  labelText: "Full Name",
-                  icon: Icons.person,
-                ),
+                _buildTextField(_nameController, "Full Name", Icons.person),
                 const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _emailController,
-                  labelText: "Email",
-                  icon: Icons.email,
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _passwordController,
-                  labelText: "Password",
-                  obscureText: !_isPasswordVisible,
-                  isPassword: true,
-                  icon: Icons.lock,
-                ),
+                _buildTextField(_emailController, "Email", Icons.email),
                 const SizedBox(height: 24),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: _registerDoctor,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      "Register",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontFamily: "GoogleSans",
-                      ),
+                _isLoading
+                    ? const CircularProgressIndicator() // Show loading indicator
+                    : ElevatedButton(
+                  onPressed: _registerDoctor,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
+                  child: const Text("Register", style: TextStyle(fontSize: 16, color: Colors.white)),
                 ),
               ],
             ),
@@ -121,82 +86,80 @@ class _DoctorRegisterPageState extends State<DoctorRegisterPage> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String labelText,
-    bool obscureText = false,
-    bool isPassword = false,
-    required IconData icon,
-  }) {
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon) {
     return TextField(
       controller: controller,
-      obscureText: obscureText,
       decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: const TextStyle(fontFamily: "GoogleSans"),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.blue, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        prefixIcon: Icon(icon, color: Colors.blue),
-        suffixIcon: isPassword
-            ? IconButton(
-          icon: Icon(
-            _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
-            color: Colors.blue,
-          ),
-          onPressed: () {
-            setState(() {
-              _isPasswordVisible = !_isPasswordVisible;
-            });
-          },
-        )
-            : null,
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
       ),
-      style: const TextStyle(fontFamily: "GoogleSans"),
     );
   }
 
+  String _generatePassword() {
+    const String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#\$%&*!";
+    Random random = Random();
+    return List.generate(10, (index) => chars[random.nextInt(chars.length)]).join();
+  }
+
   void _registerDoctor() async {
+    setState(() => _isLoading = true); // Show loading indicator
+
     try {
+      String email = _emailController.text.trim();
+      String name = _nameController.text.trim();
+      String password = _generatePassword();
+
       UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: email,
+        password: password,
       );
-
-      String doctorId = userCredential.user!.uid;
-
-      UserAccounts doctorAccount = UserAccounts(
-        id: doctorId,
-        userName: _nameController.text.trim(),
-        password: _passwordController.text.trim(),
-        isDoctor: true,
-      );
-
-      await FirestoreService<UserAccounts>('users').addItemWithId(doctorAccount, doctorId);
 
       User? user = userCredential.user;
       if (user != null) {
-        await user.updateDisplayName(_nameController.text.trim());
+        await user.sendEmailVerification();
+
+        // Save doctor info in Firestore
+        String doctorId = user.uid;
+        UserAccounts doctorAccount = UserAccounts(
+          id: doctorId,
+          userName: name,
+          isDoctor: true,
+          password: password, // Save password
+        );
+
+        await FirestoreService<UserAccounts>('users').addItemWithId(doctorAccount, doctorId);
+
+        // Send email in background (UI remains smooth)
+        Future.delayed(Duration.zero, () {
+          print("Sending credentials email..."); // Debug log
+          EmailService.sendEmail(
+            recipientEmail: email,
+            recipientName: name,
+            password: password,
+          ).then((_) {
+            print("✅ Credentials email sent successfully.");
+          }).catchError((e) {
+            print("❌ Error sending credentials email: $e");
+          });
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Doctor registered successfully!"),
+            content: Text("Account created! Check your email for credentials."),
             backgroundColor: Colors.green,
           ),
         );
+
         Navigator.pop(context);
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error: $error"),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text("Error: $error"), backgroundColor: Colors.red),
       );
+    } finally {
+      setState(() => _isLoading = false); // Hide loading indicator
     }
   }
 }

@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../footer.dart';
 import 'package:intl/intl.dart';
+
+import '../login.dart';
 
 class AdminHomePage extends StatefulWidget {
   final String adminId;
@@ -72,8 +75,16 @@ class _AdminHomePageState extends State<AdminHomePage> {
         actions: [
           IconButton(
             onPressed: () {
-              _logout(context);
-            },
+                FirebaseAuth.instance.signOut().then((value) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                        (route) => false,
+                  );
+                }).catchError((e) {
+                  print('Error signing out: $e');
+                });
+              },
             icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: "Logout",
           ),
@@ -129,7 +140,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                             "Hello, $adminName!",
                             style: const TextStyle(
                               fontSize: 22,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.bold,
                               fontFamily: "GoogleSans",
                               color: Colors.black,
                             ),
@@ -138,9 +149,9 @@ class _AdminHomePageState extends State<AdminHomePage> {
                           const Text(
                             "You're managing the Dental Wellness App.",
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 16,
                               fontFamily: "GoogleSans",
-                              color: Colors.grey,
+                              color: Colors.black54,
                             ),
                           ),
                         ],
@@ -241,10 +252,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
     );
   }
 
-  void _logout(BuildContext context) {
-    Navigator.pop(context); // Example: Navigate back to the login screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Logged out successfully")),
-    );
-  }
+  // void _logout(BuildContext context) {
+  //   Navigator.pop(context); // Example: Navigate back to the login screen
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     const SnackBar(content: Text("Logged out successfully")),
+  //   );
+  // }
 }

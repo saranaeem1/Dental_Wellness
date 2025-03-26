@@ -6,6 +6,7 @@ import '../login.dart';
 import 'package:intl/intl.dart';
 import './appointmentsPage.dart';
 import './dentistQuery.dart';
+import 'changepassword.dart';
 
 class DoctorHomePage extends StatefulWidget {
   const DoctorHomePage({Key? key}) : super(key: key);
@@ -130,6 +131,17 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                 });
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.lock),
+              title: const Text('Change Password', style: TextStyle(fontFamily: "GoogleSans")),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+                );
+              },
+            ),
+
           ],
         ),
       ),
@@ -178,7 +190,7 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Welcome, Dr. $userName!",
+                            userName.isNotEmpty ? 'Hello, Dr. $userName' : 'Hello!',
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,

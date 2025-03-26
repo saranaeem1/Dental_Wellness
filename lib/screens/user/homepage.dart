@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:tooth_tales/screens/user/patientProfile.dart';
 import '../login.dart';
 import '../footer.dart';
+import './feedback.dart'; // Import Feedback Screen
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -119,6 +120,16 @@ class _HomePageState extends State<HomePage> {
               },
             ),
             ListTile(
+              leading: Icon(Icons.feedback),
+              title: Text('Feedback', style: TextStyle(fontFamily: 'GoogleSans')),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FeedbackScreen()),
+                );
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.logout),
               title: Text('Logout', style: TextStyle(fontFamily: 'GoogleSans')),
               onTap: () {
@@ -142,12 +153,11 @@ class _HomePageState extends State<HomePage> {
         width: width,
         child: Column(
           children: [
-            // User name card with adjusted size and image on right
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Container(
-                width: width - 32,  // Matches the width of the feature cards
-                height: 150,        // Matches the height of the feature cards
+                width: width - 32,
+                height: 150,
                 decoration: BoxDecoration(
                   color: Colors.blue,
                   borderRadius: BorderRadius.circular(20),
@@ -161,20 +171,21 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           Text(
                             userName.isNotEmpty ? 'Hello, $userName!' : 'Hello!',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color:Colors.white,fontFamily: 'GoogleSans'),
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'GoogleSans'),
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
                           Text(
                             'Welcome to the Dental',
-                            style: TextStyle(fontSize: 16, color: Colors.white,fontFamily: "GoogleSans"),
-                          ), Text(
-                           'Wellness you get all',
-                            style: TextStyle(fontSize: 16, color: Colors.white,fontFamily: "GoogleSans"),
-                          ), Text(
-                            'services here.',
+                            style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: "GoogleSans"),
+                          ),
+                          Text(
+                            'Wellness you get all',
                             style: TextStyle(fontSize: 16, color: Colors.white,fontFamily: "GoogleSans"),
                           ),
-                        ],
+                          Text(
+                            'services here.',
+                            style: TextStyle(fontSize: 16, color: Colors.white,fontFamily: "GoogleSans"),
+                          )],
                       ),
                       Spacer(),
                       Image.asset(
@@ -187,7 +198,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            // Feature Tiles (with different colors)
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -210,6 +220,7 @@ class _HomePageState extends State<HomePage> {
                           buildFeatureTile(context, Icons.list_alt, "My Appointments", '/schedule', Colors.pink.shade200),
                           buildFeatureTile(context, Icons.health_and_safety, "Oral Examination", '/oralexamination', Colors.purple.shade200),
                           buildFeatureTile(context, Icons.chat, "Ask Questions", '/questions', Colors.orange.shade200),
+
                         ],
                       ),
                       SizedBox(height: 20),
@@ -232,7 +243,7 @@ class _HomePageState extends State<HomePage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: cardColor, // Use different colors for each card
+          color: cardColor,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Center(
