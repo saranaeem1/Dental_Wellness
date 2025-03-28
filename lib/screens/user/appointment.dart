@@ -91,7 +91,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     DateTime endDate = today.add(Duration(days: 30));
 
     while (today.isBefore(endDate)) {
-      if (today.weekday >= DateTime.monday && today.weekday <= DateTime.saturday) {
+      if (today.weekday >= DateTime.monday && today.weekday <= DateTime.friday) {
         String formattedDate = DateFormat('EEE d MMM').format(today);
         availableDates.add(formattedDate);
       }
