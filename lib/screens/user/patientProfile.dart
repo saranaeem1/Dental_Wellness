@@ -9,6 +9,7 @@ class ProfilePage extends StatefulWidget {
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
+
 class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
@@ -16,16 +17,19 @@ class _ProfilePageState extends State<ProfilePage> {
   final ImagePicker _picker = ImagePicker();
   String? _imageUrl;
   File? _imageFile;
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
   }
+
   Future<void> _loadUserData() async {
     var userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
+
     if (userDoc.exists) {
       var userData = userDoc.data() as Map<String, dynamic>;
       setState(() {
@@ -36,21 +40,31 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     }
   }
+
   Future<void> _updateProfile() async {
     String? imageUrl = _imageUrl;
+
     if (_imageFile != null) {
       imageUrl = await _uploadImage(_imageFile!);
+      if (imageUrl == null) {
+        _showCustomSnackBar(context, 'Image upload failed.', Colors.red);
+        return;
+      }
     }
+
     try {
-      await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).update({
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .update({
         'userName': _userNameController.text,
         'dateOfBirth': _dobController.text,
         'gender': _gender,
         'imageUrl': imageUrl,
       });
+
       _showCustomSnackBar(context, 'Profile updated successfully!', Colors.green);
     } catch (e) {
-      print('Error updating profile: $e');
       _showCustomSnackBar(context, 'Error updating profile: $e', Colors.red);
     }
   }
@@ -58,13 +72,12 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<String?> _uploadImage(File imageFile) async {
     try {
       String userId = FirebaseAuth.instance.currentUser!.uid;
-      Reference storageReference = FirebaseStorage.instance
-          .ref()
-          .child('user_profiles')
-          .child('$userId.jpg');
+      Reference storageReference =
+      FirebaseStorage.instance.ref().child('user_profiles/$userId.jpg');
 
       UploadTask uploadTask = storageReference.putFile(imageFile);
       TaskSnapshot snapshot = await uploadTask;
+
       String downloadUrl = await snapshot.ref.getDownloadURL();
       return downloadUrl;
     } catch (e) {
@@ -75,10 +88,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
     if (pickedFile != null) {
       setState(() {
         _imageFile = File(pickedFile.path);
-        _imageUrl = pickedFile.path;
       });
     }
   }
@@ -88,7 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Profile Page', style: TextStyle(color: Colors.white, fontFamily: 'GoogleSans')),
+        title: Text('Profile Page', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -119,9 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
               decoration: InputDecoration(
                 labelText: 'Username',
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
               ),
-              style: TextStyle(fontFamily: 'GoogleSans-Regular'),
             ),
             SizedBox(height: 16),
             TextField(
@@ -130,17 +141,15 @@ class _ProfilePageState extends State<ProfilePage> {
                 labelText: 'Date of Birth',
                 hintText: 'YYYY-MM-DD',
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
               ),
-              keyboardType: TextInputType.text,
-              style: TextStyle(fontFamily: 'GoogleSans-Regular'),
+              keyboardType: TextInputType.datetime,
             ),
             SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _gender,
               items: ['Male', 'Female', 'Other']
                   .map((label) => DropdownMenuItem(
-                child: Text(label, style: TextStyle(fontFamily: 'GoogleSans-Regular'),),
+                child: Text(label),
                 value: label,
               ))
                   .toList(),
@@ -152,7 +161,6 @@ class _ProfilePageState extends State<ProfilePage> {
               decoration: InputDecoration(
                 labelText: 'Gender',
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
               ),
             ),
             SizedBox(height: 24),
@@ -160,14 +168,11 @@ class _ProfilePageState extends State<ProfilePage> {
               child: ElevatedButton(
                 onPressed: _updateProfile,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Button color
+                  backgroundColor: Colors.blue,
                   padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                  textStyle: TextStyle(fontSize: 18, fontFamily: 'GoogleSans'),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
+                  textStyle: TextStyle(fontSize: 18),
                 ),
-                child: Text('Update Profile', style: TextStyle(color: Colors.white),),
+                child: Text('Update Profile', style: TextStyle(color: Colors.white)),
               ),
             ),
           ],
@@ -189,9 +194,7 @@ void _showCustomSnackBar(BuildContext context, String message, Color color) {
     action: SnackBarAction(
       label: 'Dismiss',
       textColor: Colors.white,
-      onPressed: () {
-        // Handle dismiss action if needed
-      },
+      onPressed: () {},
     ),
   );
   ScaffoldMessenger.of(context).showSnackBar(snackBar);

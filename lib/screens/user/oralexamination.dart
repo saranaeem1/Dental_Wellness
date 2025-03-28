@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'dart:io';
 
 class OralExaminationScreen extends StatefulWidget {
@@ -10,29 +11,60 @@ class OralExaminationScreen extends StatefulWidget {
 class _OralExaminationScreenState extends State<OralExaminationScreen> {
   final ImagePicker _picker = ImagePicker();
   File? _imageFile;
+  final FaceDetector _faceDetector = FaceDetector(
+    options: FaceDetectorOptions(
+      enableContours: true,
+      enableLandmarks: true,
+    ),
+  );
+  bool _isMouthDetected = false;
 
-  // Method to pick an image from the camera
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera, imageQuality: 50);
     if (pickedFile != null) {
+      File image = File(pickedFile.path);
+      bool mouthDetected = await _isMouthPresent(image);
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _isMouthDetected = mouthDetected;
+        _imageFile = mouthDetected ? image : null;
       });
+      if (!mouthDetected) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No mouth detected! Please try again.'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
-  // Method to upload the image (with basic snackbar for success/failure)
+  Future<bool> _isMouthPresent(File image) async {
+    final inputImage = InputImage.fromFile(image);
+    final faces = await _faceDetector.processImage(inputImage);
+
+    for (Face face in faces) {
+      if (face.contours[FaceContourType.lowerLipBottom] != null &&
+          face.contours[FaceContourType.upperLipTop] != null) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Future<void> _uploadImage() async {
-    if (_imageFile != null) {
-      // Upload logic here (Firebase or other backend)
+    if (_imageFile != null && _isMouthDetected) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Image uploaded successfully!'), backgroundColor: Colors.green),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please take a picture first!'), backgroundColor: Colors.red),
+        SnackBar(content: Text('Please take a valid mouth picture!'), backgroundColor: Colors.red),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _faceDetector.close();
+    super.dispose();
   }
 
   @override
@@ -43,7 +75,7 @@ class _OralExaminationScreenState extends State<OralExaminationScreen> {
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
-      backgroundColor: Colors.white,  // Set the background color to white
+      backgroundColor: Colors.white,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -106,7 +138,6 @@ class _OralExaminationScreenState extends State<OralExaminationScreen> {
             ),
           ),
           Spacer(),
-          // Footer
           Container(
             padding: EdgeInsets.all(16),
             color: Colors.blue.shade50,
@@ -122,7 +153,6 @@ class _OralExaminationScreenState extends State<OralExaminationScreen> {
     );
   }
 
-  // Helper widget to display steps
   Widget _buildStep(String stepText) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),

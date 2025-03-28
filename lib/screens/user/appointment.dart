@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:tooth_tales/models/appointmentModel.dart';
 import 'package:tooth_tales/screens/footer.dart';
@@ -33,7 +34,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
   final _formKey = GlobalKey<FormState>();
 
 
-  get phoneno => null;
+  // get phoneno => null;
 
   @override
   void initState() {
@@ -111,7 +112,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
 
       String name = _nameController.text.trim();
       String age = _ageController.text.trim();
-      String phone = _phoneController.text.trim();
+      String phone = _phoneController.text.trim(); // Correct variable
 
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId == null) {
@@ -128,7 +129,7 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
           doctorName: doctorData['userName'],
           patientName: name,
           patientAge: age,
-          phoneNo: phoneno,
+          phoneNo: phone, // Use the validated phone number
           timestamp: Timestamp.now(),
           userId: userId,
           appointmentTime: "$formattedDate at $selectedSubSlot",
@@ -230,9 +231,23 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                 _buildInputField(
                   controller: _phoneController,
                   label: 'Phone Number',
-                  hint: 'Enter phone number',
+                  hint: 'Enter phone number (e.g., 01712345678)',
                   icon: Icons.phone,
                   keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter phone number';
+                    }
+                    // Check if phone number is numeric and has 11 digits
+                    if (!RegExp(r'^[0-9]{11}$').hasMatch(value)) {
+                      return 'Enter a valid 11-digit phone number';
+                    }
+                    return null;
+                  },
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11), // Changed from 10 to 11
+                  ],
                 ),
                 SizedBox(height: 20),
                 Text(
@@ -305,6 +320,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     required String hint,
     required IconData icon,
     TextInputType? keyboardType,
+    String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextFormField(
       controller: controller,
@@ -326,10 +343,10 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
         ),
       ),
       keyboardType: keyboardType,
-      validator: (value) => value!.isEmpty ? 'Please enter $label' : null,
+      validator: validator,
+      inputFormatters: inputFormatters,
     );
   }
-
   Widget _buildDropdown({
     required String? value,
     required String hint,

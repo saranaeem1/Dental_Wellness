@@ -146,15 +146,16 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
       String end = endTime!.format(context);
 
       setState(() {
-        if (!availability.containsKey(selectedDay)) {
-          availability[selectedDay!] = [];
-        }
-        availability[selectedDay!]!.add({"start": start, "end": end});
+        // Replace existing slot instead of adding multiple slots for the same day
+        availability[selectedDay!] = [
+          {"start": start, "end": end}
+        ];
         startTime = null;
         endTime = null;
       });
     }
   }
+
 
   void _removeTimeSlot(String day, int index) {
     setState(() {

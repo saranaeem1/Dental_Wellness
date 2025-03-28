@@ -167,7 +167,7 @@ class _ManageDoctorsPageState extends State<ManageDoctorsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "${doctor['speciality'] ?? 'N/A'}", // Specialty
+                              "${doctor['profession'] ?? 'N/A'}", // Specialty
                               style: const TextStyle(
                                   fontSize: 14,
                                   fontFamily: "GoogleSans",

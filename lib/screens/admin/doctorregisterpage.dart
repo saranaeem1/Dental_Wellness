@@ -147,7 +147,7 @@ class _DoctorRegisterPageState extends State<DoctorRegisterPage> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Account created! Check your email for credentials."),
+            content: Text("Account created!"),
             backgroundColor: Colors.green,
           ),
         );

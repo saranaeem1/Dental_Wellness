@@ -143,7 +143,7 @@ class AppointmentsPage extends StatelessWidget {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(Icons.report_problem, color: Colors.red, size: 20),
+                          const Icon(Icons.phone, color: Colors.blue, size: 20),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(

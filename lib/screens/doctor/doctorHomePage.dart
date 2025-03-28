@@ -39,7 +39,6 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
         if (userDoc.exists) {
           setState(() {
             userName = userDoc.get('userName');
-            imageUrl = userDoc.get('imageUrl');
           });
         } else {
           print('User document does not exist');
@@ -190,7 +189,7 @@ class _DoctorHomePageState extends State<DoctorHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userName.isNotEmpty ? 'Hello, Dr. $userName' : 'Hello!',
+                            userName.isNotEmpty ? 'Hello, $userName!' : 'Hello!',
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,

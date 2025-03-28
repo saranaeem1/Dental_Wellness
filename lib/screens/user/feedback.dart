@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tooth_tales/models/feedback.dart';
 
 class FeedbackScreen extends StatefulWidget {
   @override
@@ -11,6 +10,16 @@ class FeedbackScreen extends StatefulWidget {
 class _FeedbackScreenState extends State<FeedbackScreen> {
   int _rating = 0;
   TextEditingController _commentController = TextEditingController();
+
+  Future<String> _fetchUserName() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return "Anonymous";
+
+    DocumentSnapshot userDoc =
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+    return userDoc.exists ? (userDoc['userName'] ?? "Anonymous") : "Anonymous";
+  }
 
   void _submitFeedback() async {
     if (_rating == 0) return;
@@ -23,15 +32,18 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       return;
     }
 
-    FeedbackModel feedback = FeedbackModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      userId: user.uid,
-      rating: _rating,
-      comment: _commentController.text,
-      timestamp: DateTime.now(),
-    );
+    String username = await _fetchUserName();
 
-    await FirebaseFirestore.instance.collection('feedbacks').doc(feedback.id).set(feedback.toJson());
+    Map<String, dynamic> feedback = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'userId': user.uid,
+      'userName': username,
+      'rating': _rating,
+      'comment': _commentController.text,
+      'timestamp': FieldValue.serverTimestamp(),
+    };
+
+    await FirebaseFirestore.instance.collection('feedbacks').doc(feedback['id']).set(feedback);
 
     setState(() {
       _rating = 0;
@@ -169,46 +181,45 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               }
               return ListView(
                 children: snapshot.data!.docs.map((doc) {
-                  FeedbackModel feedback = FeedbackModel.fromJson(doc.data() as Map<String, dynamic>);
+                  var feedback = doc.data() as Map<String, dynamic>;
                   return Card(
                     margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Colors.blue, width: 2), // Blue border
+                      side: BorderSide(color: Colors.blue, width: 2),
                     ),
                     elevation: 3,
-                    color: Colors.lightBlue[50], // Light blue background
+                    color: Colors.lightBlue[50],
                     child: ListTile(
                       leading: Icon(Icons.star, color: Colors.orange),
                       title: Text(
-                        feedback.comment,
+                        "${feedback['userName'] ?? 'Anonymous'}",
+                        style: TextStyle(fontFamily: 'GoogleSans', fontWeight: FontWeight.w800, color: Colors.black),
+                      ),
+                      subtitle: Text(
+                        feedback['comment'] ?? '',
                         style: TextStyle(fontFamily: 'GoogleSans'),
+
                       ),
                       trailing: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.lime[50], // Yellow box for rating
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              " ${feedback.rating} ⭐",
-                              style: TextStyle(
-                                fontFamily: 'GoogleSans',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          // Text(
-                          //   "${feedback.timestamp.toLocal()}".split(' ')[0],
-                          //   style: TextStyle(fontFamily: 'GoogleSans', color: Colors.grey),
-                          // ),
-                        ],
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                      Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.lime[50], // Yellow box for rating
+                        borderRadius: BorderRadius.circular(8),
                       ),
+                      child: Text(
+                        " ${feedback['rating']} ⭐",
+                        style: TextStyle(
+                          fontFamily: 'GoogleSans',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    ]),
                     ),
                   );
                 }).toList(),

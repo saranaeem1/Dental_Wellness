@@ -260,10 +260,7 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
 
   void _showEditDialog(Map<String, dynamic> appointment) {
     final doctorNameController = TextEditingController(text: appointment['doctorName']);
-    final patientNameController = TextEditingController(text: appointment['patientName']);
     final appointmentTimeController = TextEditingController(text: appointment['appointmentTime']);
-    final patientAgeController = TextEditingController(text: appointment['patientAge']);
-    final patientIssueController = TextEditingController(text: appointment['patientIssue']);
 
     showDialog(
       context: context,
@@ -277,22 +274,12 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
                   controller: doctorNameController,
                   decoration: const InputDecoration(labelText: "Doctor's Name"),
                 ),
-                TextField(
-                  controller: patientNameController,
-                  decoration: const InputDecoration(labelText: "Patient's Name"),
-                ),
+
                 TextField(
                   controller: appointmentTimeController,
                   decoration: const InputDecoration(labelText: "Appointment Time"),
                 ),
-                TextField(
-                  controller: patientAgeController,
-                  decoration: const InputDecoration(labelText: "Patient Age"),
-                ),
-                TextField(
-                  controller: patientIssueController,
-                  decoration: const InputDecoration(labelText: "Patient's Issue"),
-                ),
+
               ],
             ),
           ),
@@ -307,10 +294,8 @@ class _ViewAppointmentsPageState extends State<ViewAppointmentsPage> {
               onPressed: () {
                 final updatedData = {
                   'doctorName': doctorNameController.text,
-                  'patientName': patientNameController.text,
                   'appointmentTime': appointmentTimeController.text,
-                  'patientAge': patientAgeController.text,
-                  'patientIssue': patientIssueController.text,
+
                 };
                 _editAppointment(appointment['id'], updatedData);
                 Navigator.pop(context);
