@@ -48,6 +48,7 @@ class DoctorScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 var doctor = doctors[index].data() as Map<String, dynamic>;
 
+                String imageUrl = doctor['profileImage'] ?? "Unknown";
                 String userName = doctor['userName'] ?? 'Unknown';
                 String speciality = doctor['profession'] ?? 'Not Specified';
                 String location = doctor['location'] ?? 'Location not available';
@@ -94,7 +95,33 @@ class DoctorScreen extends StatelessWidget {
                         // Doctor's Avatar
                         ClipRRect(
                           borderRadius: BorderRadius.circular(50),
-                          child: Image.asset(
+                          child: imageUrl != null && imageUrl.isNotEmpty
+                              ? Image.network(
+                            imageUrl,
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                      (loadingProgress.expectedTotalBytes ?? 1)
+                                      : null,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/Images/avatar.png',
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          )
+                              : Image.asset(
                             'assets/Images/avatar.png',
                             width: 60,
                             height: 60,
