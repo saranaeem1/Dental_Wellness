@@ -393,7 +393,6 @@ class _DoctorProfilePageState extends State<DoctorProfilePage> {
                           color: Colors.white)),
                 ),
               ),
-
             ],
           ),
         ),
