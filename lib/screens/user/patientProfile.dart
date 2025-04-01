@@ -80,11 +80,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
       String downloadUrl = await snapshot.ref.getDownloadURL();
       return downloadUrl;
+    } on FirebaseException catch (e) {
+      print('Firebase Error: ${e.code} - ${e.message}');
+      return null;
     } catch (e) {
-      print('Error uploading image: $e');
+      print('General Error: $e');
       return null;
     }
   }
+
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
